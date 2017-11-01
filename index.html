@@ -515,12 +515,8 @@ pre.line-numbers > code {
 
 <ol>
 <li><a href="#setup">Project setup</a></li>
-<li><a href="#application_profiles">Application profiles</a></li>
-<li><a href="#database">Connecting your application to a PostgreSQL database</a></li>
-<li><a href="#manualdeploy">Manual deploy on EC2</a></li>
-<li><a href="#CodePipeline">Deployment with CodePipeline</a></li>
-<li><a href="#loadbalancing">Load balancing and subdomain</a></li>
-<li><a href="#other">Labs with less instructions</a></li>
+<li><a href="#ec2deploy">Deploy on EC2</a></li>
+<li><a href="#database">Connecting your application to a RDS instance</a></li>
 </ol>
 
 <p><a name="setup"></a></p>
@@ -584,7 +580,8 @@ spring.h2.console.path=/h2
 
 <p><code>$ java jar -Dspring.profiles.active=production build/libs/&lt;application-name&gt;-1.0-SNAPSHOT.jar</code>   </p>
 
-<p>on your local machine. </p>
+<p>on your local machine. 
+<a name="ec2deploy"></a></p>
 
 <h2 id="toc_5">Deploy on EC2</h2>
 
@@ -649,6 +646,8 @@ spring.h2.console.path=/h2
 </ol>
 
 <p><span style="color:orange"><strong>Checkpoint 5</strong></span> You can browse to <code>http://&lt;URL-of-your-ec2&gt;:8080/&lt;application-name&gt;/ping</code> and get the response <em>&quot;pong&quot;</em></p>
+
+<p><a name="database"></a></p>
 
 <h2 id="toc_8">Connect applicatoin to a DB</h2>
 

@@ -1,12 +1,8 @@
 # Cloud Computing with AWS
 
 1. [Project setup](#setup)
-2. [Application profiles](#application_profiles)
-3. [Connecting your application to a PostgreSQL database](#database)
-4. [Manual deploy on EC2](#manualdeploy)
-5. [Deployment with CodePipeline](#CodePipeline)
-6. [Load balancing and subdomain](#loadbalancing)
-7. [Labs with less instructions](#other)
+2. [Deploy on EC2](#ec2deploy)
+3. [Connecting your application to a RDS instance](#database)
 
 
 <a name="setup"></a>
@@ -72,7 +68,7 @@ spring.h2.console.path=/h2
 `$ java jar -Dspring.profiles.active=production build/libs/<application-name>-1.0-SNAPSHOT.jar`   
 
 on your local machine. 
-
+<a name="ec2deploy"></a>
 ## Deploy on EC2
 
 ### Setup instance
@@ -120,7 +116,7 @@ on your local machine.
 
 <span style="color:orange">**Checkpoint 5**</span> You can browse to `http://<URL-of-your-ec2>:8080/<application-name>/ping` and get the response _"pong"_
 
-
+<a name="database"></a>
 ## Connect applicatoin to a DB
 
 ### Local DB
