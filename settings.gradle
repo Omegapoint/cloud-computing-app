@@ -1,0 +1,27 @@
+import static java.lang.System.out
+
+
+out.println '\n\n'
+out.println '*************************************************************************'
+out.println '*                                                                       *'
+out.println '*                       Omegapoint AWS Lab                              *'
+out.println '*                      Building Application                             *'
+out.println '*                                                                       *'
+out.println '*************************************************************************'
+out.println ''
+
+final Properties props = new Properties()
+props.load(new FileInputStream("src/main/resources/application.properties"))
+if(props.size() == 0) {
+    throw new Exception("Could not locate build.properties or build.properties has not been created.");
+} else {
+    out.println 'Importing properties from application.properties was successful'
+}
+
+
+out.println 'Loading general settings. (settings.gradle) '
+
+gradle.ext.foo = props.get('spring.application.name').toString()
+out.println ''
+out.println 'Application name --> ' + props.get('spring.application.name').toString() + ''
+out.println ''
