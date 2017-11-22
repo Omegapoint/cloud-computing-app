@@ -65,7 +65,7 @@ spring.h2.console.path=/h2
 
 <span style="color:orange">**Checkpoint 3**</span> You can now run the application with:
 
-`$ java jar -Dspring.profiles.active=production build/libs/<application-name>-1.0-SNAPSHOT.jar`   
+`$ java -jar -Dspring.profiles.active=production build/libs/<application-name>-1.0-SNAPSHOT.jar`   
 
 on your local machine. 
 <a name="ec2deploy"></a>
@@ -195,7 +195,7 @@ spring.datasource.password=<password>
 Remember to configure the security group of your RDS instance so it allows _inbound_ traffic from your EC2 instance. 
 
  
-<span style="color:orange">**Checkpoint 7**</span> You should now be able to run `java jar -Dspring.profiles.active=production <application-name>-1.0-SNAPSHOT.jar` **on your ec2 instance** and connect your application to the RDS instance. Confirm by going to `http://<ec2-url>:8080/<application-name>/reverse/omegapoint` in your browser att receive the following content:
+<span style="color:orange">**Checkpoint 7**</span> You should now be able to run `java -jar -Dspring.profiles.active=production <application-name>-1.0-SNAPSHOT.jar` **on your ec2 instance** and connect your application to the RDS instance. Confirm by going to `http://<ec2-url>:8080/<application-name>/reverse/omegapoint` in your browser att receive the following content:
 
 ```javascript
 {

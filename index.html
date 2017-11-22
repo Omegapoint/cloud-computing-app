@@ -578,7 +578,7 @@ spring.h2.console.path=/h2
 
 <p><span style="color:orange"><strong>Checkpoint 3</strong></span> You can now run the application with:</p>
 
-<p><code>$ java jar -Dspring.profiles.active=production build/libs/&lt;application-name&gt;-1.0-SNAPSHOT.jar</code>   </p>
+<p><code>$ java -jar -Dspring.profiles.active=production build/libs/&lt;application-name&gt;-1.0-SNAPSHOT.jar</code>   </p>
 
 <p>on your local machine. 
 <a name="ec2deploy"></a></p>
@@ -634,7 +634,7 @@ spring.h2.console.path=/h2
 </ul></li>
 </ol>
 
-<p><span style="color:orange"><strong>Checkpoint 4</strong></span> You can now SSH to your EC2 instance with the key you&#39;ve generated. The username is <strong>ec2-user</strong>.</p>
+<p><span style="color:orange"><strong>Checkpoint 4</strong></span> You can now SSH to your EC2 instance with the key you&#39;ve generated. The username is <strong>ec2-user</strong>. To ssh with a your key use the following command: <code>ssh -i key.pem ec2-user@[insert public IP of the EC2 instance]</code></p>
 
 <h3 id="toc_7">Manual deploy</h3>
 
@@ -733,16 +733,318 @@ spring.datasource.password=&lt;password&gt;</code></pre></div>
 
 <p>Remember to configure the security group of your RDS instance so it allows <em>inbound</em> traffic from your EC2 instance. </p>
 
-<p><span style="color:orange"><strong>Checkpoint 7</strong></span> You should now be able to run <code>java jar -Dspring.profiles.active=production &lt;application-name&gt;-1.0-SNAPSHOT.jar</code> <strong>on your ec2 instance</strong> and connect your application to the RDS instance. Confirm by going to <code>http://&lt;ec2-url&gt;:8080/&lt;application-name&gt;/reverse/omegapoint</code> in your browser att receive the following content:</p>
+<p><span style="color:orange"><strong>Checkpoint 7</strong></span> You should now be able to run <code>java -jar -Dspring.profiles.active=production &lt;application-name&gt;-1.0-SNAPSHOT.jar</code> <strong>on your ec2 instance</strong> and connect your application to the RDS instance. Confirm by going to <code>http://&lt;ec2-url&gt;:8080/&lt;application-name&gt;/reverse/omegapoint</code> in your browser att receive the following content:</p>
 
 <div><pre class="line-numbers"><code class="language-javascript">{
     &quot;input&quot;: &lt;  
 }   </code></pre></div>
 
+<h2 id="toc_11">Code Pipeline preparations</h2>
+
+<p>The goal in this lab is to automatically test and build using CodeBuild and deploy the application after every push to master.
+You will deploy using CodeDeploy which requires an agent application to be running on the EC2 instance. Therefore you will provision a new instance (using CloudFormation) and install the agent automatically.</p>
+
+<h3 id="toc_12">Provision new EC2 instance using CloudFormation</h3>
+
+<ol>
+<li>Terminate the EC2 instance you provisioned in the previous lab</li>
+<li>Download this <a href="http://s3-eu-west-1.amazonaws.com/aws-codedeploy-eu-west-1/templates/latest/CodeDeploy_SampleCF_Template.json">CloudFormation template</a>.</li>
+<li>Open the template in an editor. After line 233 we want to install Java 8 and uninstall Java 7 as we did with our previous instance. Add the following lines:</li>
+</ol>
+
+<div><pre class="line-numbers"><code class="language-bash">&quot;yum install java-1.8.0 -y \n&quot;,
+&quot;yum remove java-1.7.0 -y \n&quot;,</code></pre></div>
+
+<ol>
+<li>Go to the AWS service CloudFormation and click Create stack.</li>
+<li>Choose <em>Upload a template to Amazon S3</em> and choose your modified template .json file</li>
+<li>Specify details and parameters
+
+<ul>
+<li>Stack name: <code>&lt;application-name&gt;</code></li>
+<li>InstanceCount: <code>1</code></li>
+<li>InstanceType: <code>t1.micro</code></li>
+<li>KeyPairName: <code>&lt;application-name&gt;-key</code></li>
+<li>OperatingSystem: <code>Linux</code></li>
+<li>SSHLocation: <code>My IP</code></li>
+<li>TagKey: <code>Name</code></li>
+<li>TagValue: <code>&lt;application-name&gt;</code></li>
+</ul></li>
+<li> Click Next, then Next again,</li>
+<li>Tick the checkbox <em>I acknowledge that AWS CloudFormation might create IAM resources.</em> and click Create.</li>
+</ol>
+
+<p><span style="color:orange"><strong>Checkpoint 8</strong></span> Make sure the template creation runs smooth and that your stack in CloudFormation gets the status <em>CREATE_COMPLETE</em>. Find the new EC2 instance and make sure you can SSH to it.</p>
+
+<h3 id="toc_13">Bulid specification for CodeBuild</h3>
+
+<p>CodeBuild requires a buildspec.yml file to be in the root of your application:</p>
+
+<h5 id="toc_14">buildspec.yml</h5>
+
+<div><pre class="line-numbers"><code class="language-yaml">version: 0.2
+phases:
+  build:
+    commands:
+      - echo Build started on `date`
+      - sh gradlew clean assemble
+artifacts:
+  files:
+    - appspec.yml
+    - &#39;build/libs/*.jar&#39;
+    - start_application.sh
+  discard-paths: yes</code></pre></div>
+
+<h3 id="toc_15">Deploy specification for CodeDeploy</h3>
+
+<p>CodeDeploy requires two files:</p>
+
+<h5 id="toc_16">appspec.yml</h5>
+
+<div><pre class="line-numbers"><code class="language-yaml">version: 0.0
+os: linux
+files:
+  - source: &lt;application-name&gt;-&lt;version&gt;.jar
+    destination: /tmp
+hooks:
+  ApplicationStart:
+    - location: start_application.sh
+      timeout: 500
+      runas: root</code></pre></div>
+
+<h5 id="toc_17">start_application.sh</h5>
+
+<div><pre class="line-numbers"><code class="language-bash">#!/bin/bash
+
+touch app.log
+nohup java -jar /tmp/*.jar -Dspring.profiles.active=production &gt; app.log 2&gt;&amp;1 &amp;</code></pre></div>
+
+<p>You may have to modify these files to fit your application.</p>
+
+<p><span style="color:orange"><strong>Checkpoint 9</strong></span> Push these files to your repository.</p>
+
+<h2 id="toc_18">Create the CodePipeline</h2>
+
+<ol>
+<li>Go to the service CodePipeline and click <em>Create Pipeline</em></li>
+<li>Name it <code>&lt;application-name&gt;-CodePipeline</code> and click next step</li>
+<li>For <em>Source provider</em> chooce Github and click <em>Connect to Github</em> and authorize AWS to access your Github resources</li>
+<li>In <em>Repository</em> choose your application repository, then select the branch on which the version of the application that you want to deploy is (typiclly <em>master</em>). Then click <em>next</em>.</li>
+</ol>
+
+<h4 id="toc_19">CodeBuild</h4>
+
+<ul>
+<li><strong>Build</strong>
+
+<ul>
+<li>Build provider: <code>AWS CodeBuild</code></li>
+<li>Configure your project -&gt; Create a new build project</li>
+<li>Project Name: <code>&lt;application-name&gt;-CodeBuild</code></li>
+</ul></li>
+<li><strong>Environment: How to build</strong>
+
+<ul>
+<li>Environment image: <code>Use an image managed by AWS CodeBuild</code></li>
+<li>Operating system: <code>Ubuntu</code></li>
+<li>Runtime: <code>Java</code></li>
+<li>Version: <em>&quot;aws/codebuild/java:openjdk-8&quot;</em></li>
+<li>Build specification: <em>&quot;Use the buildspec.yml in the source code root directory&quot;</em></li>
+</ul></li>
+<li><strong>AWS CodeBuild service role</strong>
+
+<ul>
+<li>Select <em>Create a service role in your account</em></li>
+<li>Role name: Leave as default</li>
+<li>Click <em>Save build project</em></li>
+<li>After the build project is saved click <em>Next step</em></li>
+</ul></li>
+</ul>
+
+<h4 id="toc_20">CodeDeploy</h4>
+
+<p>Deployment provider: <code>AWS CodeDeploy</code></p>
+
+<ul>
+<li><strong>AWS CodeDeploy</strong>
+
+<ul>
+<li>Click the link <em>create a new one in AWS CodeDeploy</em></li>
+<li>Application name: <code>&lt;application-name&gt;-Application</code></li>
+<li>Deployment group: <code>&lt;application-name&gt;-DeploymentGroup</code></li>
+<li>Deployment type: In-place deployment</li>
+</ul></li>
+<li><strong>Environment configuration</strong>
+
+<ul>
+<li>Choose Amazon EC2 instances</li>
+<li>Key: <code>Name</code></li>
+<li>Value: <code>&lt;application-name&gt;</code> make sure you see the EC2 instance created by the CloudFormation template in the <em>Matching instances</em> section</li>
+<li>Do not tick the box <em>Enable load balancing</em></li>
+</ul></li>
+<li><strong>Deployment configuration</strong>
+
+<ul>
+<li>Leave as default</li>
+</ul></li>
+<li><strong>Service role</strong>
+
+<ul>
+<li>Service role ARN: Select the role named <code>BlueGreenCodeDeployServiceRole</code></li>
+<li>Click create application</li>
+</ul></li>
+</ul>
+
+<h4 id="toc_21">CodePipeline</h4>
+
+<p>Go back to the pipeline tab</p>
+
+<ul>
+<li><strong>AWS CodeDeploy</strong>
+
+<ul>
+<li>Application name: <code>&lt;application-name&gt;-Application</code></li>
+<li>Deployment group: <code>&lt;application-name&gt;-DeploymentGroup</code></li>
+<li>Click <em>Next step</em></li>
+<li>Role name: <code>AWS-CodePipeline-Service</code></li>
+<li>Click <em>Next step</em></li>
+<li>Review your pipeline, then click <em>Create pipeline</em></li>
+</ul></li>
+</ul>
+
+<p><span style="color:orange"><strong>Checkpoint 10</strong></span> At this point you should see your pipeline. Unless it starts automatically click <code>Release change</code>. Make sure your source code is built and deployed successfully. If there are issues, resolve these before moving on.</p>
+
+<h2 id="toc_22">Load balancing with Elastic Load Balancer</h2>
+
+<ol>
+<li>Go to EC2 -&gt; Load Balancers and click <em>Create Load Balancer</em></li>
+<li><em>Create</em> an Application Load Balancer</li>
+<li><strong>Basic Configuration</strong>
+
+<ul>
+<li>Name: <code>&lt;application-name&gt;-ALB</code></li>
+<li>Scheme: <em>internet-facing</em></li>
+<li>IP address type: <em>ipv4</em></li>
+</ul></li>
+<li><strong>Listeners</strong>
+
+<ul>
+<li>Leave as default</li>
+</ul></li>
+<li><strong>Availability Zones</strong>
+
+<ul>
+<li>VPC: Select whichever VPC is marked <em>default</em></li>
+<li>Select all availability zones</li>
+<li>Click _Next: Configure Security Settings</li>
+</ul></li>
+<li><strong>Conigure Security Settings</strong>
+
+<ul>
+<li>Leave as defualt, click <em>Next: Configure Security Groups</em></li>
+</ul></li>
+<li><strong>Configure Security Groups</strong>
+
+<ul>
+<li>Choose <em>Select an <strong>existing</strong> seurity group</em></li>
+<li>Select the group previously created: <code>&lt;application-name&gt;-security-group</code></li>
+<li>Click <em>Next: Configure Routing</em></li>
+</ul></li>
+<li><strong>Configure Routing</strong>
+
+<ul>
+<li>Target group: New target group</li>
+<li>Name: <code>&lt;application-name&gt;-TargetGroup</code></li>
+<li>Protocol: HTTP</li>
+<li>Port: 8080 (or the custom port on which your application is running)</li>
+<li>Target type: instance</li>
+<li><strong>Healtch Checks</strong></li>
+<li>Protocol: HTTP</li>
+<li>Path: any valid path where your application responds with <code>HTTP 200</code></li>
+<li><strong>Advanced healthcheck settings</strong></li>
+<li>Port: traffic port</li>
+<li>Healthy treshold: 2</li>
+<li>Unhealthy treshold: 2</li>
+<li>Timeout: 5</li>
+<li>Interval: 10</li>
+<li>Success codes: 200-299</li>
+<li>Click <em>Next: Register Targets</em></li>
+</ul></li>
+<li><strong>Register Targets</strong>
+
+<ul>
+<li>Search for your EC2 instance in the <em>Instances</em> section</li>
+<li>Select your instance and click <em>Add to registered</em></li>
+<li>Click <em>Next: Review</em></li>
+</ul></li>
+<li><strong>Review</strong>
+
+<ul>
+<li>Review your Load Balancer configuration and click <em>Create</em></li>
+</ul></li>
+</ol>
+
+<p><span style="color:orange"><strong>Checkpoint 10</strong></span> Verify your ALB is working</p>
+
+<ul>
+<li>Go to EC2 -&gt; Load Balancers and find your Load Balancer</li>
+<li>Wait until the state of the Load Balancer changes from <em>provisioning</em> to <em>active</em></li>
+<li>Go to EC2 -&gt; Target groups and find the target group containing your instance</li>
+<li>Click the <em>Targets</em> tab and verify that your instance has the status healthy. If properly configured it will take up to 20 seconds for the instance to pass its healthcheck.</li>
+<li>Browse to the DNS name of the Load Balancer (including request mapping) and verify that you reach your application</li>
+</ul>
+
+<h2 id="toc_23">Subdomain with Route53</h2>
+
+<ol>
+<li>Go to Route53 -&gt; Hosted zones and click <em>lab.omegapint.academy</em>.</li>
+<li>Click <em>Create record set</em></li>
+<li><strong>Creat record set</strong>
+
+<ul>
+<li>Name: choose a subdomain (e.g. test.lab.omegapoint.academy)</li>
+<li>Type: A - IPv4 address</li>
+<li>Alias: Yes</li>
+<li>Alias target: select your ALB</li>
+<li>Routing policy: Simple</li>
+<li>Evaluate Targe Health: No</li>
+<li>Click: <em>Save Record Set</em></li>
+</ul></li>
+</ol>
+
+<p><span style="color:orange"><strong>Checkpoint 10</strong></span> Verify that you reach your application using the subdomain</p>
+
+<h2 id="toc_24">Labs with less instructions</h2>
+
+<h3 id="toc_25">Auto scaling</h3>
+
+<p>Make your application highly available by launching your EC2 instances from/in an auto scaling group.</p>
+
+<p>High level outline
+  - Create an auto scaling group and launch configuration
+  - Configure CodeDeploy to deploy to the auto scaling group instead of the single EC2 instance used in the previous labs
+  - Configure the ALB to route to the EC2 instances in your auto scaling group.</p>
+
+<h3 id="toc_26">Lambda</h3>
+
+<p>Create a Lambda function with API Gateway replicating the behaviour of the Spring application used in previous labs.</p>
+
+<p>Java is optional. Consider using the <a href="https://serverless.com/">Serverless framework</a>.</p>
+
+<p>This lab could be finished by configuring weighted routing for your record set in Route53. Equal weights would send half the traffic to your EC2 instance, and half the traffic to your Lambda.</p>
+
 
 
 <script type="text/javascript">
 var _self="undefined"!=typeof window?window:"undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?self:{},Prism=function(){var e=/\blang(?:uage)?-(\w+)\b/i,t=0,n=_self.Prism={util:{encode:function(e){return e instanceof a?new a(e.type,n.util.encode(e.content),e.alias):"Array"===n.util.type(e)?e.map(n.util.encode):e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\u00a0/g," ")},type:function(e){return Object.prototype.toString.call(e).match(/\[object (\w+)\]/)[1]},objId:function(e){return e.__id||Object.defineProperty(e,"__id",{value:++t}),e.__id},clone:function(e){var t=n.util.type(e);switch(t){case"Object":var a={};for(var r in e)e.hasOwnProperty(r)&&(a[r]=n.util.clone(e[r]));return a;case"Array":return e.map&&e.map(function(e){return n.util.clone(e)})}return e}},languages:{extend:function(e,t){var a=n.util.clone(n.languages[e]);for(var r in t)a[r]=t[r];return a},insertBefore:function(e,t,a,r){r=r||n.languages;var l=r[e];if(2==arguments.length){a=arguments[1];for(var i in a)a.hasOwnProperty(i)&&(l[i]=a[i]);return l}var o={};for(var s in l)if(l.hasOwnProperty(s)){if(s==t)for(var i in a)a.hasOwnProperty(i)&&(o[i]=a[i]);o[s]=l[s]}return n.languages.DFS(n.languages,function(t,n){n===r[e]&&t!=e&&(this[t]=o)}),r[e]=o},DFS:function(e,t,a,r){r=r||{};for(var l in e)e.hasOwnProperty(l)&&(t.call(e,l,e[l],a||l),"Object"!==n.util.type(e[l])||r[n.util.objId(e[l])]?"Array"!==n.util.type(e[l])||r[n.util.objId(e[l])]||(r[n.util.objId(e[l])]=!0,n.languages.DFS(e[l],t,l,r)):(r[n.util.objId(e[l])]=!0,n.languages.DFS(e[l],t,null,r)))}},plugins:{},highlightAll:function(e,t){var a={callback:t,selector:'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'};n.hooks.run("before-highlightall",a);for(var r,l=a.elements||document.querySelectorAll(a.selector),i=0;r=l[i++];)n.highlightElement(r,e===!0,a.callback)},highlightElement:function(t,a,r){for(var l,i,o=t;o&&!e.test(o.className);)o=o.parentNode;o&&(l=(o.className.match(e)||[,""])[1],i=n.languages[l]),t.className=t.className.replace(e,"").replace(/\s+/g," ")+" language-"+l,o=t.parentNode,/pre/i.test(o.nodeName)&&(o.className=o.className.replace(e,"").replace(/\s+/g," ")+" language-"+l);var s=t.textContent,u={element:t,language:l,grammar:i,code:s};if(!s||!i)return n.hooks.run("complete",u),void 0;if(n.hooks.run("before-highlight",u),a&&_self.Worker){var c=new Worker(n.filename);c.onmessage=function(e){u.highlightedCode=e.data,n.hooks.run("before-insert",u),u.element.innerHTML=u.highlightedCode,r&&r.call(u.element),n.hooks.run("after-highlight",u),n.hooks.run("complete",u)},c.postMessage(JSON.stringify({language:u.language,code:u.code,immediateClose:!0}))}else u.highlightedCode=n.highlight(u.code,u.grammar,u.language),n.hooks.run("before-insert",u),u.element.innerHTML=u.highlightedCode,r&&r.call(t),n.hooks.run("after-highlight",u),n.hooks.run("complete",u)},highlight:function(e,t,r){var l=n.tokenize(e,t);return a.stringify(n.util.encode(l),r)},tokenize:function(e,t){var a=n.Token,r=[e],l=t.rest;if(l){for(var i in l)t[i]=l[i];delete t.rest}e:for(var i in t)if(t.hasOwnProperty(i)&&t[i]){var o=t[i];o="Array"===n.util.type(o)?o:[o];for(var s=0;s<o.length;++s){var u=o[s],c=u.inside,g=!!u.lookbehind,h=!!u.greedy,f=0,d=u.alias;u=u.pattern||u;for(var p=0;p<r.length;p++){var m=r[p];if(r.length>e.length)break e;if(!(m instanceof a)){u.lastIndex=0;var y=u.exec(m),v=1;if(!y&&h&&p!=r.length-1){var b=r[p+1].matchedStr||r[p+1],k=m+b;if(p<r.length-2&&(k+=r[p+2].matchedStr||r[p+2]),u.lastIndex=0,y=u.exec(k),!y)continue;var w=y.index+(g?y[1].length:0);if(w>=m.length)continue;var _=y.index+y[0].length,P=m.length+b.length;if(v=3,P>=_){if(r[p+1].greedy)continue;v=2,k=k.slice(0,P)}m=k}if(y){g&&(f=y[1].length);var w=y.index+f,y=y[0].slice(f),_=w+y.length,S=m.slice(0,w),O=m.slice(_),j=[p,v];S&&j.push(S);var A=new a(i,c?n.tokenize(y,c):y,d,y,h);j.push(A),O&&j.push(O),Array.prototype.splice.apply(r,j)}}}}}return r},hooks:{all:{},add:function(e,t){var a=n.hooks.all;a[e]=a[e]||[],a[e].push(t)},run:function(e,t){var a=n.hooks.all[e];if(a&&a.length)for(var r,l=0;r=a[l++];)r(t)}}},a=n.Token=function(e,t,n,a,r){this.type=e,this.content=t,this.alias=n,this.matchedStr=a||null,this.greedy=!!r};if(a.stringify=function(e,t,r){if("string"==typeof e)return e;if("Array"===n.util.type(e))return e.map(function(n){return a.stringify(n,t,e)}).join("");var l={type:e.type,content:a.stringify(e.content,t,r),tag:"span",classes:["token",e.type],attributes:{},language:t,parent:r};if("comment"==l.type&&(l.attributes.spellcheck="true"),e.alias){var i="Array"===n.util.type(e.alias)?e.alias:[e.alias];Array.prototype.push.apply(l.classes,i)}n.hooks.run("wrap",l);var o="";for(var s in l.attributes)o+=(o?" ":"")+s+'="'+(l.attributes[s]||"")+'"';return"<"+l.tag+' class="'+l.classes.join(" ")+'" '+o+">"+l.content+"</"+l.tag+">"},!_self.document)return _self.addEventListener?(_self.addEventListener("message",function(e){var t=JSON.parse(e.data),a=t.language,r=t.code,l=t.immediateClose;_self.postMessage(n.highlight(r,n.languages[a],a)),l&&_self.close()},!1),_self.Prism):_self.Prism;var r=document.currentScript||[].slice.call(document.getElementsByTagName("script")).pop();return r&&(n.filename=r.src,document.addEventListener&&!r.hasAttribute("data-manual")&&document.addEventListener("DOMContentLoaded",n.highlightAll)),_self.Prism}();"undefined"!=typeof module&&module.exports&&(module.exports=Prism),"undefined"!=typeof global&&(global.Prism=Prism);
+</script>
+
+<script type="text/javascript">
+!function(e){var t={variable:[{pattern:/\$?\(\([\w\W]+?\)\)/,inside:{variable:[{pattern:/(^\$\(\([\w\W]+)\)\)/,lookbehind:!0},/^\$\(\(/],number:/\b-?(?:0x[\dA-Fa-f]+|\d*\.?\d+(?:[Ee]-?\d+)?)\b/,operator:/--?|-=|\+\+?|\+=|!=?|~|\*\*?|\*=|\/=?|%=?|<<=?|>>=?|<=?|>=?|==?|&&?|&=|\^=?|\|\|?|\|=|\?|:/,punctuation:/\(\(?|\)\)?|,|;/}},{pattern:/\$\([^)]+\)|`[^`]+`/,inside:{variable:/^\$\(|^`|\)$|`$/}},/\$(?:[a-z0-9_#\?\*!@]+|\{[^}]+\})/i]};e.languages.bash={shebang:{pattern:/^#!\s*\/bin\/bash|^#!\s*\/bin\/sh/,alias:"important"},comment:{pattern:/(^|[^"{\\])#.*/,lookbehind:!0},string:[{pattern:/((?:^|[^<])<<\s*)(?:"|')?(\w+?)(?:"|')?\s*\r?\n(?:[\s\S])*?\r?\n\2/g,lookbehind:!0,inside:t},{pattern:/(["'])(?:\\\\|\\?[^\\])*?\1/g,inside:t}],variable:t.variable,"function":{pattern:/(^|\s|;|\||&)(?:alias|apropos|apt-get|aptitude|aspell|awk|basename|bash|bc|bg|builtin|bzip2|cal|cat|cd|cfdisk|chgrp|chmod|chown|chroot|chkconfig|cksum|clear|cmp|comm|command|cp|cron|crontab|csplit|cut|date|dc|dd|ddrescue|df|diff|diff3|dig|dir|dircolors|dirname|dirs|dmesg|du|egrep|eject|enable|env|ethtool|eval|exec|expand|expect|export|expr|fdformat|fdisk|fg|fgrep|file|find|fmt|fold|format|free|fsck|ftp|fuser|gawk|getopts|git|grep|groupadd|groupdel|groupmod|groups|gzip|hash|head|help|hg|history|hostname|htop|iconv|id|ifconfig|ifdown|ifup|import|install|jobs|join|kill|killall|less|link|ln|locate|logname|logout|look|lpc|lpr|lprint|lprintd|lprintq|lprm|ls|lsof|make|man|mkdir|mkfifo|mkisofs|mknod|more|most|mount|mtools|mtr|mv|mmv|nano|netstat|nice|nl|nohup|notify-send|nslookup|open|op|passwd|paste|pathchk|ping|pkill|popd|pr|printcap|printenv|printf|ps|pushd|pv|pwd|quota|quotacheck|quotactl|ram|rar|rcp|read|readarray|readonly|reboot|rename|renice|remsync|rev|rm|rmdir|rsync|screen|scp|sdiff|sed|seq|service|sftp|shift|shopt|shutdown|sleep|slocate|sort|source|split|ssh|stat|strace|su|sudo|sum|suspend|sync|tail|tar|tee|test|time|timeout|times|touch|top|traceroute|trap|tr|tsort|tty|type|ulimit|umask|umount|unalias|uname|unexpand|uniq|units|unrar|unshar|uptime|useradd|userdel|usermod|users|uuencode|uudecode|v|vdir|vi|vmstat|wait|watch|wc|wget|whereis|which|who|whoami|write|xargs|xdg-open|yes|zip)(?=$|\s|;|\||&)/,lookbehind:!0},keyword:{pattern:/(^|\s|;|\||&)(?:let|:|\.|if|then|else|elif|fi|for|break|continue|while|in|case|function|select|do|done|until|echo|exit|return|set|declare)(?=$|\s|;|\||&)/,lookbehind:!0},"boolean":{pattern:/(^|\s|;|\||&)(?:true|false)(?=$|\s|;|\||&)/,lookbehind:!0},operator:/&&?|\|\|?|==?|!=?|<<<?|>>|<=?|>=?|=~/,punctuation:/\$?\(\(?|\)\)?|\.\.|[{}[\];]/};var a=t.variable[1].inside;a["function"]=e.languages.bash["function"],a.keyword=e.languages.bash.keyword,a.boolean=e.languages.bash.boolean,a.operator=e.languages.bash.operator,a.punctuation=e.languages.bash.punctuation}(Prism);
+</script>
+
+<script type="text/javascript">
+Prism.languages.yaml={scalar:{pattern:/([\-:]\s*(![^\s]+)?[ \t]*[|>])[ \t]*(?:((?:\r?\n|\r)[ \t]+)[^\r\n]+(?:\3[^\r\n]+)*)/,lookbehind:!0,alias:"string"},comment:/#.*/,key:{pattern:/(\s*[:\-,[{\r\n?][ \t]*(![^\s]+)?[ \t]*)[^\r\n{[\]},#]+?(?=\s*:\s)/,lookbehind:!0,alias:"atrule"},directive:{pattern:/(^[ \t]*)%.+/m,lookbehind:!0,alias:"important"},datetime:{pattern:/([:\-,[{]\s*(![^\s]+)?[ \t]*)(\d{4}-\d\d?-\d\d?([tT]|[ \t]+)\d\d?:\d{2}:\d{2}(\.\d*)?[ \t]*(Z|[-+]\d\d?(:\d{2})?)?|\d{4}-\d{2}-\d{2}|\d\d?:\d{2}(:\d{2}(\.\d*)?)?)(?=[ \t]*($|,|]|}))/m,lookbehind:!0,alias:"number"},"boolean":{pattern:/([:\-,[{]\s*(![^\s]+)?[ \t]*)(true|false)[ \t]*(?=$|,|]|})/im,lookbehind:!0,alias:"important"},"null":{pattern:/([:\-,[{]\s*(![^\s]+)?[ \t]*)(null|~)[ \t]*(?=$|,|]|})/im,lookbehind:!0,alias:"important"},string:{pattern:/([:\-,[{]\s*(![^\s]+)?[ \t]*)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')(?=[ \t]*($|,|]|}))/m,lookbehind:!0},number:{pattern:/([:\-,[{]\s*(![^\s]+)?[ \t]*)[+\-]?(0x[\da-f]+|0o[0-7]+|(\d+\.?\d*|\.?\d+)(e[\+\-]?\d+)?|\.inf|\.nan)[ \t]*(?=$|,|]|})/im,lookbehind:!0},tag:/![^\s]+/,important:/[&*][\w]+/,punctuation:/---|[:[\]{}\-,|>?]|\.\.\./};
 </script>
 
 <script type="text/javascript">
