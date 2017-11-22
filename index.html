@@ -513,10 +513,18 @@ pre.line-numbers > code {
 
 <h1 id="toc_0">Cloud Computing with AWS</h1>
 
+<p><strong>Jonatan Landsberg</strong>, jonatan.landsberg@omegapoint.se<br>
+<strong>David Strömberg</strong>, david.stromberg@omegapoint.se  </p>
+
 <ol>
 <li><a href="#setup">Project setup</a></li>
 <li><a href="#ec2deploy">Deploy on EC2</a></li>
 <li><a href="#database">Connecting your application to a RDS instance</a></li>
+<li><a href="#CodePipeline1">Code Pipeline Preparations</a></li>
+<li><a href="#CodePipeline2">Create the CodePipeline</a></li>
+<li><a href="#Balancer">Load balancing with Elastic Load Balancer</a></li>
+<li><a href="#Route53">Subdomain with Route53</a></li>
+<li><a href="#less">Labs with less instructions</a></li>
 </ol>
 
 <p><a name="setup"></a></p>
@@ -739,6 +747,8 @@ spring.datasource.password=&lt;password&gt;</code></pre></div>
     &quot;input&quot;: &lt;  
 }   </code></pre></div>
 
+<p><a name="CodePipeline1"></a></p>
+
 <h2 id="toc_11">Code Pipeline preparations</h2>
 
 <p>The goal in this lab is to automatically test and build using CodeBuild and deploy the application after every push to master.
@@ -821,7 +831,8 @@ nohup java -jar /tmp/*.jar -Dspring.profiles.active=production &gt; app.log 2&gt
 
 <p>You may have to modify these files to fit your application.</p>
 
-<p><span style="color:orange"><strong>Checkpoint 9</strong></span> Push these files to your repository.</p>
+<p><span style="color:orange"><strong>Checkpoint 9</strong></span> Push these files to your repository.
+<a name="CodePipeline2"></a></p>
 
 <h2 id="toc_18">Create the CodePipeline</h2>
 
@@ -914,6 +925,8 @@ nohup java -jar /tmp/*.jar -Dspring.profiles.active=production &gt; app.log 2&gt
 
 <p><span style="color:orange"><strong>Checkpoint 10</strong></span> At this point you should see your pipeline. Unless it starts automatically click <code>Release change</code>. Make sure your source code is built and deployed successfully. If there are issues, resolve these before moving on.</p>
 
+<p><a name="Balancer"></a></p>
+
 <h2 id="toc_22">Load balancing with Elastic Load Balancer</h2>
 
 <ol>
@@ -994,6 +1007,8 @@ nohup java -jar /tmp/*.jar -Dspring.profiles.active=production &gt; app.log 2&gt
 <li>Browse to the DNS name of the Load Balancer (including request mapping) and verify that you reach your application</li>
 </ul>
 
+<p><a name="Route53"></a></p>
+
 <h2 id="toc_23">Subdomain with Route53</h2>
 
 <ol>
@@ -1012,7 +1027,8 @@ nohup java -jar /tmp/*.jar -Dspring.profiles.active=production &gt; app.log 2&gt
 </ul></li>
 </ol>
 
-<p><span style="color:orange"><strong>Checkpoint 10</strong></span> Verify that you reach your application using the subdomain</p>
+<p><span style="color:orange"><strong>Checkpoint 10</strong></span> Verify that you reach your application using the subdomain
+<a name="less"></a></p>
 
 <h2 id="toc_24">Labs with less instructions</h2>
 

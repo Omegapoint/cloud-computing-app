@@ -1,8 +1,17 @@
 # Cloud Computing with AWS
 
+**Jonatan Landsberg**, jonatan.landsberg@omegapoint.se  
+**David Strömberg**, david.stromberg@omegapoint.se  
+ 
+
 1. [Project setup](#setup)
 2. [Deploy on EC2](#ec2deploy)
 3. [Connecting your application to a RDS instance](#database)
+4. [Code Pipeline Preparations](#CodePipeline1)
+5. [Create the CodePipeline](#CodePipeline2)
+6. [Load balancing with Elastic Load Balancer](#Balancer)
+7. [Subdomain with Route53](#Route53)
+8. [Labs with less instructions](#less)
 
 
 <a name="setup"></a>
@@ -202,7 +211,7 @@ Remember to configure the security group of your RDS instance so it allows _inbo
 	"input": <	
 }	
 ```
-
+<a name="CodePipeline1"></a>
 ## Code Pipeline preparations
 The goal in this lab is to automatically test and build using CodeBuild and deploy the application after every push to master.
 You will deploy using CodeDeploy which requires an agent application to be running on the EC2 instance. Therefore you will provision a new instance (using CloudFormation) and install the agent automatically.
@@ -282,7 +291,7 @@ nohup java -jar /tmp/*.jar -Dspring.profiles.active=production > app.log 2>&1 &
 You may have to modify these files to fit your application.
 
 <span style="color:orange">**Checkpoint 9**</span> Push these files to your repository.
-
+<a name="CodePipeline2"></a>
 ## Create the CodePipeline
  1. Go to the service CodePipeline and click _Create Pipeline_
  2. Name it `<application-name>-CodePipeline` and click next step
@@ -341,7 +350,7 @@ You may have to modify these files to fit your application.
 
 <span style="color:orange">**Checkpoint 10**</span> At this point you should see your pipeline. Unless it starts automatically click `Release change`. Make sure your source code is built and deployed successfully. If there are issues, resolve these before moving on.
 
-
+<a name="Balancer"></a>
 ## Load balancing with Elastic Load Balancer
  1. Go to EC2 -> Load Balancers and click _Create Load Balancer_
  2. _Create_ an Application Load Balancer
@@ -393,6 +402,7 @@ You may have to modify these files to fit your application.
 * Click the _Targets_ tab and verify that your instance has the status healthy. If properly configured it will take up to 20 seconds for the instance to pass its healthcheck.
 * Browse to the DNS name of the Load Balancer (including request mapping) and verify that you reach your application
 
+<a name="Route53"></a>
 ## Subdomain with Route53
  1. Go to Route53 -> Hosted zones and click _lab.omegapint.academy_.
  2. Click _Create record set_
@@ -406,7 +416,7 @@ You may have to modify these files to fit your application.
     - Click: _Save Record Set_
 
 <span style="color:orange">**Checkpoint 10**</span> Verify that you reach your application using the subdomain
-
+<a name="less"></a>
 ## Labs with less instructions
 
 
