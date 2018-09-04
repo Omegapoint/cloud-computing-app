@@ -1,9 +1,5 @@
 # Cloud Computing with AWS
 
-**Jonatan Landsberg**, jonatan.landsberg@omegapoint.se  
-**David Strömberg**, david.stromberg@omegapoint.se  
- 
-
 1. [Project setup](#setup)
 2. [Deploy on EC2](#ec2deploy)
 3. [Connecting your application to a RDS instance](#database)
@@ -126,7 +122,7 @@ on your local machine.
 <span style="color:orange">**Checkpoint 5**</span> You can browse to `http://<URL-of-your-ec2>:8080/<application-name>/ping` and get the response _"pong"_
 
 <a name="database"></a>
-## Connect applicatoin to a DB
+## Connect application to a DB
 
 ### Local DB
 _Note: This section ("Local DB") is not mandatory and you could jump directly to "Cloud DB" if you want._
