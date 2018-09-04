@@ -121,7 +121,7 @@ on your local machine.
 ### Manual deploy
 
  1. Upload your jar to to the instance with scp.
- 2. Install java with `yes | sudo yum install java-1.8.0` and remove Java 1.7 with `yes | sudo yum remove java-1.7.0`
+ 2. Install java with `yes | sudo yum install java-1.8.0`
  3. Start the application by using the command `java -jar -Dspring.profiles.active=production <application-name>.jar`.
  4. Verify that your app is accessible from the internet by browsing the public IP address of the instance.
 
@@ -158,7 +158,7 @@ _Note: This section ("Local DB") is not mandatory and you could jump directly to
 
 ### Cloud DB
 
-[Login to AWS](https://sts.omegapoint.se/adfs/ls/IdpInitiatedSignOn.aspx). Go to **RDS** under _"Database"_. Click on the orange button _"Launch a DB Instance"_ and choose _PostgreSQL_. 
+[Login to AWS](https://sts.omegapoint.se/adfs/ls/IdpInitiatedSignOn.aspx). Go to **RDS** under _"Database"_. Click on the orange button _"Create database"_ and choose _PostgreSQL_. 
 
 
 Make the following choices:
