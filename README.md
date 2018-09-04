@@ -123,7 +123,6 @@ on your local machine.
  1. Upload your jar to to the instance with scp.
  2. Install java with `yes | sudo yum install java-1.8.0`
  3. Start the application by using the command `java -jar -Dspring.profiles.active=production <application-name>.jar`.
- 4. Verify that your app is accessible from the internet by browsing the public IP address of the instance.
 
 <span style="color:orange">**Checkpoint 5**</span> You can browse to `http://<URL-of-your-ec2>:8080/<application-name>/ping` and get the response _"pong"_
 
