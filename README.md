@@ -34,7 +34,7 @@ The goal of this course is to introduce some of the most common services found i
  4. `$ git push --mirror https://github.com/Omegapoint/aws-<your-name>.git` If you're using ssh to access Github, run: `$ git push --mirror git@github.com:Omegapoint/aws-<your-name>.git`
  5. `$ cd ..`
  6. `$ rm -rf cloud-computing-app.git`
- 7. `$ git clone https://github.com/Omegapoint/aws-<your-name>.git`
+ 7. `$ git clone https://github.com/Omegapoint/aws-<your-name>.git` If you're using ssh to access Github, run: `$ git clone  git@github.com:Omegapoint/aws-<your-name>.git`
  8. `$ cd aws-<your-name> b`
  3. Build the application `$ ./gradlew clean build`
  4. Run the application `$ ./gradlew bootRun -Dspring.profiles.active=local`
