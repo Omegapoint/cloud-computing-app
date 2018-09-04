@@ -338,7 +338,7 @@ You may have to modify these files to fit your application.
  * **Deployment configuration**
 	  - Leave as default
  * **Service role**
-	  - Service role ARN: Select the role named `BlueGreenCodeDeployServiceRole`
+	  - Service role ARN: Select the role named `<your-application-name>-CodeDeployTrustRole-<hash>`
 	  - Click create application
 
 #### CodePipeline
