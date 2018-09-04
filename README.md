@@ -151,7 +151,9 @@ _Note: This section ("Local DB") is not mandatory and you could jump directly to
 
 ```javascript
 {
-	"input": <	
+	"applicationName": "<your application name>",
+	"timeStamp": "<timestamp>",
+	"data": "tniopagemo"
 }	
 ```
 
