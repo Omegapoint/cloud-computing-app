@@ -31,7 +31,7 @@ The goal of this course is to introduce some of the most common services found i
  1. Create a new [Git repository](https://github.com/Omegapoint/) called `aws-<your-name>` Don't forget to delete the repository when your done with the course.
  2. Clone the template repository `$ git clone --bare https://github.com/Omegapoint/cloud-computing-app.git`
  3. `$ cd cloud-computing-app.git`
- 4. `$ git push --mirror https://github.com/Omegapoint/aws-<your-name>.git` If you're using ssh to access Github, use: `$ git push --mirror git@github.com:Omegapoint/aws-<your-name>.git`
+ 4. `$ git push --mirror https://github.com/Omegapoint/aws-<your-name>.git` If you're using ssh to access Github, run: `$ git push --mirror git@github.com:Omegapoint/aws-<your-name>.git`
  5. `$ cd ..`
  6. `$ rm -rf cloud-computing-app.git`
  7. `$ git clone https://github.com/Omegapoint/aws-<your-name>.git`
