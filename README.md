@@ -83,7 +83,9 @@ on your local machine.
 ## Deploy on EC2
 
 ### Setup instance
-[Login to AWS](https://sts.omegapoint.se/adfs/ls/IdpInitiatedSignOn.aspx). 
+[Login to AWS](https://sts.omegapoint.se/adfs/ls/IdpInitiatedSignOn.aspx).
+
+Note: Don't forget to always use Ireland as the region in AWS.
 
  1. **Go to the Service -> EC2 -> Key pairs.** 
  2. **Create a new key** and download an ssh key. You will use this to connect to instances that you provision during this lab. The key should be called `<application-name>-key` 
