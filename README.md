@@ -51,7 +51,7 @@ Change the name of the application in `application.properties`:
  1 .`spring.application.name=<application-name>`  
  2. `$ ./gradlew clean build`  
 
-<span style="color:orange">**Checkpoint 2**</span> Gradle should now have built the jar `build/libs/<application-name>-1.0-SNAPSHOT.jar`. If you once again run the application as above in step 3, you should be able to go to `http://localhost:8080/<application-name>/ping` in your browser att receive a _"pong"_.
+<span style="color:orange">**Checkpoint 2**</span> Gradle should now have built the jar `build/libs/<application-name>-1.0-SNAPSHOT.jar`. If you once again run the application as above in step 10, you should be able to go to `http://localhost:8080/<application-name>/ping` in your browser att receive a _"pong"_.
 
 
 Create a new property file in `src/resources/` for production environment: `application-production.properties` with the following content:
