@@ -44,7 +44,7 @@ The goal of this course is to introduce some of the most common services found i
 
 If you're using IntelliJ, import the new project by: _New Project_ --> _From Existing Sources_ . Choose Gradle as build tool.
 
-### Modify applicatin properties
+### Modify application properties
 
 Change the name of the application in `application.properties`:
 
