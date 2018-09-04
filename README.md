@@ -379,7 +379,7 @@ You may have to modify these files to fit your application.
     - Target group: New target group
     - Name: `<application-name>-TargetGroup`
     - Protocol: HTTP
-    - Port: 8080 (or the custom port on which your application is running)
+    - Port: 8080 (or the custom port on which your application is running) Note that the security group of the EC2 might only allow port 80 by default and therefore require that you add a custom rule for inbound traffic if you are using a non-80 port.
     - Target type: instance
     - **Healtch Checks**
     - Protocol: HTTP
