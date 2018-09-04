@@ -175,7 +175,7 @@ Make the following choices:
  3. **Configure advanced settings**
   - Virtual Private Cloud (VPC): _Default VPC_
   - Public accessibility: _Yes_
-  - Databasename: `<application-name>_db` Note that `-` is not an allowed character
+  - Databasename: `<application-name>_db`
   - Databaseport: `5432`
   - Backup: _No preference_
   - Monitoring: _Disable_
