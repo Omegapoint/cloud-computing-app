@@ -74,7 +74,7 @@ spring.h2.console.path=/h2
 ```
 
 
-<span style="color:orange">**Checkpoint 3**</span> You can now run the application with:
+<span style="color:orange">**Checkpoint 3**</span> Verify that you can run the application with the new production profile and production configuration. Build the application as before, then run the application with:
 
 `$ java -jar -Dspring.profiles.active=production build/libs/<application-name>-1.0-SNAPSHOT.jar`   
 
