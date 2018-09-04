@@ -1,5 +1,11 @@
 # Cloud Computing with AWS
 
+## Goal
+
+The goal of this course is to introduce some of the most common services found in Amazon Web Services (AWS). More specifically we'll run a simple Spring Boot application on a virtual server, connect the application to a database and make the Spring Boot application reachable through a load balancer and with an external DNS name. Finally, we'll setup a deployment pipeline for the Spring Boot application.
+
+## Content
+
 1. [Project setup](#setup)
 2. [Deploy on EC2](#ec2deploy)
 3. [Connecting your application to a RDS instance](#database)
@@ -22,7 +28,7 @@
  
 ### Verify local environment
 
- 1. Create a new [Git repository](https://github.com/Omegapoint/) called `<application-name>`
+ 1. Create a new [Git repository](https://github.com/Omegapoint/) called `aws-<your-name>` Don't forget to delete the repository when your done with the course.
  2. Clone the template repository `$ git clone --bare https://github.com/Omegapoint/cloud-computing-app.git`
  3. `$ cd cloud-computing-app.git`
  4. `$ git push --mirror https://github.com/Omegapoint/<application-name>.git`
