@@ -115,7 +115,7 @@ on your local machine.
 
 
 
-<span style="color:orange">**Checkpoint 4**</span> You can now SSH to your EC2 instance with the key you've generated. The username is **ec2-user**. To ssh with a your key use the following command: `ssh -i key.pem ec2-user@[insert public IP of the EC2 instance]`
+<span style="color:orange">**Checkpoint 4**</span> You can now SSH to your EC2 instance with the key you've generated. The username is **ec2-user**. To ssh with a your key use the following command: `ssh -i <path-to-your-pem-file> ec2-user@<public IP of the EC2 instance>`
 
 
 ### Manual deploy
