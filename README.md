@@ -23,7 +23,7 @@ The goal of this course is to introduce some of the most common services found i
 
  1. Install [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
  2. Install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
- 3. Install [PgAdmin](https://www.postgresql.org/ftp/pgadmin/pgadmin4/v2.0/)  
+ 3. Install the latest [PgAdmin](https://www.postgresql.org/ftp/pgadmin/pgadmin4)  
 
  
 ### Verify local environment
