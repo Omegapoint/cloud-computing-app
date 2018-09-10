@@ -213,7 +213,9 @@ Remember to configure the security group of your RDS instance so it allows _inbo
 
 ```javascript
 {
-	"input": <	
+	"applicationName": "<your application name>",
+	"timeStamp": "<timestamp>",
+	"data": "tniopagemo"
 }	
 ```
 <a name="CodePipeline1"></a>
